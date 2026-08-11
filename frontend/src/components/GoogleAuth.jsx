@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, LogOut, CheckCircle, ShieldCheck, X, Sparkles, User } from 'lucide-react';
+import { LogIn, LogOut, CheckCircle, ShieldCheck, X, Sparkles, User, AlertTriangle } from 'lucide-react';
 import { animateClick } from '../utils/useAnime';
 
 export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState('vabhijit516@gmail.com');
-  const [nameInput, setNameInput] = useState('Abhijit V (Google Account)');
+  const [emailInput, setEmailInput] = useState('sec25am112@sairamtap.edu.in');
+  const [nameInput, setNameInput] = useState('Sairam Tech User');
+  const [hasRealClientId, setHasRealClientId] = useState(false);
 
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (clientId && clientId !== 'your-google-client-id.apps.googleusercontent.com') {
+      setHasRealClientId(true);
       if (window.google && window.google.accounts && window.google.accounts.id) {
         window.google.accounts.id.initialize({
           client_id: clientId,
@@ -67,7 +69,7 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
           user_id: data.user.user_id || 'google_user_' + Date.now(),
           email: emailInput.trim() || data.user.email,
           name: nameInput.trim() || data.user.name,
-          picture: data.user.picture || 'https://lh3.googleusercontent.com/a/default-user=s96-c'
+          picture: data.user.picture || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
         };
         localStorage.setItem('datapulse_token', data.access_token);
         localStorage.setItem('datapulse_user', JSON.stringify(userObj));
@@ -87,6 +89,12 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
     if (onLogout) onLogout();
   };
 
+  const quickAccounts = [
+    { name: "Sairam Student", email: "sec25am112@sairamtap.edu.in" },
+    { name: "Abhijit V (Dev)", email: "vabhijit516@gmail.com" },
+    { name: "TechX Data Lead", email: "demo.user@gmail.com" }
+  ];
+
   if (user) {
     return (
       <div className="flex items-center space-x-3 bg-slate-900/90 px-3.5 py-1.5 rounded-full border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
@@ -99,7 +107,7 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
           <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-900"></span>
         </div>
         <div className="text-left hidden sm:block">
-          <p className="text-xs font-bold text-slate-100 truncate max-w-[120px]">{user.name}</p>
+          <p className="text-xs font-bold text-slate-100 truncate max-w-[130px]">{user.name}</p>
           <p className="text-[10px] text-indigo-300 font-mono flex items-center">
             <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />
             Google Authorized
@@ -122,7 +130,7 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
   return (
     <>
       <div className="flex items-center space-x-2">
-        <div id="googleSignInBtn"></div>
+        {hasRealClientId && <div id="googleSignInBtn"></div>}
         <button
           onClick={(e) => {
             animateClick(e.currentTarget);
@@ -148,7 +156,7 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Sign in with Google</span>
+          <span>Google Sign-In</span>
         </button>
       </div>
 
@@ -181,10 +189,10 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
                 </div>
                 <div>
                   <h3 className="font-display font-extrabold text-base text-slate-100">
-                    Google Account Sign-In
+                    Google Identity Sign-In
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Authorized OAuth 2.0 Identity Verification
+                    Authorized OAuth 2.0 Token Verification
                   </p>
                 </div>
               </div>
@@ -200,18 +208,47 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
               </button>
             </div>
 
-            {/* Input Form */}
-            <div className="py-5 space-y-4">
+            {/* Quick Presets */}
+            <div className="mt-4 pt-1">
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-2 font-semibold">
+                Select Google Account
+              </span>
+              <div className="space-y-1.5">
+                {quickAccounts.map((acc, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setEmailInput(acc.email);
+                      setNameInput(acc.name);
+                    }}
+                    className={`w-full p-2.5 rounded-xl text-left text-xs font-mono border transition-all flex items-center justify-between ${
+                      emailInput === acc.email
+                        ? 'bg-indigo-600/20 border-indigo-500 text-indigo-200'
+                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <div>
+                      <p className="font-semibold">{acc.name}</p>
+                      <p className="text-[10px] text-slate-400">{acc.email}</p>
+                    </div>
+                    {emailInput === acc.email && <CheckCircle className="w-4 h-4 text-indigo-400" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Form Inputs */}
+            <div className="py-4 space-y-3">
               <div>
                 <label className="block text-xs font-semibold font-mono text-slate-300 mb-1">
-                  Google Email Address
+                  Google Email
                 </label>
                 <input
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-cyan-200 focus:outline-none focus:border-indigo-500"
-                  placeholder="name@gmail.com"
+                  placeholder="sec25am112@sairamtap.edu.in"
                 />
               </div>
 
@@ -227,16 +264,9 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
                   placeholder="Full Name"
                 />
               </div>
-
-              <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>
-                  Generates an encrypted 7-day JWT access token & logs unstructured auth events.
-                </span>
-              </div>
             </div>
 
-            {/* Action Button */}
+            {/* Action Buttons */}
             <div className="pt-2 flex justify-end space-x-3">
               <button
                 onClick={() => setModalOpen(false)}
@@ -257,7 +287,7 @@ export default function GoogleAuth({ user, onAuthSuccess, onLogout }) {
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    <span>Authorize Google Sign-In</span>
+                    <span>Authorize & Sign In</span>
                   </>
                 )}
               </button>
