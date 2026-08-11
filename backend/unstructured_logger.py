@@ -150,7 +150,7 @@ def sync_remote_logs(collection_name: str, log_id: str, document: Dict[str, Any]
         except Exception as e:
             print("Supabase sync info:", e)
 
-def query_unstructured_logs(collection_name: str, filter_key: Optional[str] = None, filter_val: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
+def query_unstructured_logs(collection_name: str, filter_key: Optional[str] = None, filter_val: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
     """
     Query unstructured log documents using NoSQL/document filtering syntax.
     """
@@ -162,13 +162,20 @@ def query_unstructured_logs(collection_name: str, filter_key: Optional[str] = No
             "SELECT document_json FROM unstructured_logs WHERE collection_name = ? AND json_extract(document_json, ?) = ? ORDER BY timestamp DESC LIMIT ?;",
             (collection_name, f"$.{filter_key}", filter_val, limit)
         )
+        rows = cursor.fetchall()
+        if not rows:
+            cursor.execute(
+                "SELECT document_json FROM unstructured_logs WHERE collection_name = ? ORDER BY timestamp DESC LIMIT ?;",
+                (collection_name, limit)
+            )
+            rows = cursor.fetchall()
     else:
         cursor.execute(
             "SELECT document_json FROM unstructured_logs WHERE collection_name = ? ORDER BY timestamp DESC LIMIT ?;",
             (collection_name, limit)
         )
+        rows = cursor.fetchall()
 
-    rows = cursor.fetchall()
     conn.close()
 
     return [json.loads(row["document_json"]) for row in rows]

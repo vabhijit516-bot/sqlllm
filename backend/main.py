@@ -215,19 +215,28 @@ def handle_chat(req: ChatRequest):
 
 @app.get("/api/sessions")
 def list_sessions(email: Optional[str] = None):
-    """Retrieve user chat history sessions filtered by user email."""
+    """Retrieve user chat history sessions."""
     conn = get_app_db_connection()
     cursor = conn.cursor()
     if email and email.strip():
         cursor.execute(
-            "SELECT session_id, title, created_at FROM chat_sessions WHERE user_email = ? ORDER BY updated_at DESC LIMIT 25;",
+            """SELECT session_id, title, user_email, created_at 
+               FROM chat_sessions 
+               WHERE user_email = ? OR user_email = 'guest@techx.ai' OR user_email IS NULL OR user_email = ''
+               ORDER BY updated_at DESC LIMIT 50;""",
             (email,)
         )
+        sessions = [dict(row) for row in cursor.fetchall()]
+        if not sessions:
+            cursor.execute(
+                "SELECT session_id, title, user_email, created_at FROM chat_sessions ORDER BY updated_at DESC LIMIT 50;"
+            )
+            sessions = [dict(row) for row in cursor.fetchall()]
     else:
         cursor.execute(
-            "SELECT session_id, title, created_at FROM chat_sessions ORDER BY updated_at DESC LIMIT 25;"
+            "SELECT session_id, title, user_email, created_at FROM chat_sessions ORDER BY updated_at DESC LIMIT 50;"
         )
-    sessions = [dict(row) for row in cursor.fetchall()]
+        sessions = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return {"sessions": sessions}
 
