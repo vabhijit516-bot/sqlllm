@@ -27,6 +27,17 @@ export default function App() {
   const [scrollOffset, setScrollOffset] = useState(0);
   const [selectedTable, setSelectedTable] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  // Restore user session from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('datapulse_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Failed to parse saved user session:', e);
+      }
+    }
+  }, []);
 
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
