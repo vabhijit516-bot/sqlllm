@@ -183,4 +183,5 @@ llm sql/
 ---
 
 ## 📜 License
-Built for Enterprise Data & Intelligence Analytics.
+This project is licensed under the [MIT License](file:///c:/Users/ABHIJIT/OneDrive/Documents/llm%20sql/LICENSE) — see the LICENSE file for details.
+
