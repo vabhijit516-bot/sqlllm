@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 if os.getenv("VERCEL"):
     TMP_DIR = Path("/tmp")
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
     DB_PATH = TMP_DIR / "ecommerce.db"
     APP_DB_PATH = TMP_DIR / "app_state.db"
     
@@ -17,9 +18,15 @@ if os.getenv("VERCEL"):
     src_app_db = BASE_DIR / "app_state.db"
     
     if src_db.exists() and not DB_PATH.exists():
-        shutil.copy(src_db, DB_PATH)
+        try:
+            shutil.copy(src_db, DB_PATH)
+        except Exception:
+            pass
     if src_app_db.exists() and not APP_DB_PATH.exists():
-        shutil.copy(src_app_db, APP_DB_PATH)
+        try:
+            shutil.copy(src_app_db, APP_DB_PATH)
+        except Exception:
+            pass
 else:
     DB_PATH = BASE_DIR / os.getenv("DATABASE_PATH", "ecommerce.db")
     APP_DB_PATH = BASE_DIR / os.getenv("APP_DB_PATH", "app_state.db")

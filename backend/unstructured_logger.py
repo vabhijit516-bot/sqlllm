@@ -14,6 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 if os.getenv("VERCEL"):
     TMP_DIR = Path("/tmp")
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DB_PATH = TMP_DIR / "unstructured_logs.db"
     src_log_db = BASE_DIR / "unstructured_logs.db"
     if src_log_db.exists() and not LOG_DB_PATH.exists():
