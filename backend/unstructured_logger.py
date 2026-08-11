@@ -119,7 +119,27 @@ def log_unstructured_event(collection_name: str, event_type: str, user_id: str, 
 
 def sync_remote_logs(collection_name: str, log_id: str, document: Dict[str, Any]):
     """Sync log document to Firebase Firestore or Supabase if configured."""
-    # Supabase sync
+    # 1. Firebase Firestore REST API sync
+    firebase_project_id = os.getenv("FIREBASE_PROJECT_ID")
+    if firebase_project_id:
+        try:
+            import httpx
+            fields = {
+                "log_id": {"stringValue": str(document.get("log_id", ""))},
+                "collection": {"stringValue": str(document.get("collection", ""))},
+                "event_type": {"stringValue": str(document.get("event_type", ""))},
+                "user_id": {"stringValue": str(document.get("user_id", ""))},
+                "email": {"stringValue": str(document.get("email", ""))},
+                "timestamp": {"integerValue": str(document.get("timestamp", 0))},
+                "iso_time": {"stringValue": str(document.get("iso_time", ""))},
+                "data_json": {"stringValue": json.dumps(document.get("data", {}))}
+            }
+            url = f"https://firestore.googleapis.com/v1/projects/{firebase_project_id}/databases/(default)/documents/{collection_name}?documentId={log_id}"
+            httpx.post(url, json={"fields": fields}, timeout=4.0)
+        except Exception as e:
+            print("Firebase sync info:", e)
+
+    # 2. Supabase sync
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_KEY")
     if supabase_url and supabase_key:
@@ -128,7 +148,7 @@ def sync_remote_logs(collection_name: str, log_id: str, document: Dict[str, Any]
             client = create_client(supabase_url, supabase_key)
             client.table(collection_name).insert(document).execute()
         except Exception as e:
-            pass # Fail gracefully if remote database credentials pending
+            print("Supabase sync info:", e)
 
 def query_unstructured_logs(collection_name: str, filter_key: Optional[str] = None, filter_val: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
     """
