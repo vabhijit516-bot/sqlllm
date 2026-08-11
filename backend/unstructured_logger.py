@@ -3,6 +3,7 @@ import sqlite3
 import time
 import uuid
 import os
+import shutil
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from dotenv import load_dotenv
@@ -10,40 +11,63 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-LOG_DB_PATH = BASE_DIR / "unstructured_logs.db"
+
+if os.getenv("VERCEL"):
+    TMP_DIR = Path("/tmp")
+    LOG_DB_PATH = TMP_DIR / "unstructured_logs.db"
+    src_log_db = BASE_DIR / "unstructured_logs.db"
+    if src_log_db.exists() and not LOG_DB_PATH.exists():
+        try:
+            shutil.copy(src_log_db, LOG_DB_PATH)
+        except Exception as e:
+            print("Failed to copy unstructured_logs.db to /tmp:", e)
+else:
+    LOG_DB_PATH = BASE_DIR / "unstructured_logs.db"
 
 def get_log_db_connection():
     """Returns SQLite connection object dedicated to unstructured JSON document logs."""
-    conn = sqlite3.connect(LOG_DB_PATH)
+    try:
+        conn = sqlite3.connect(LOG_DB_PATH)
+    except sqlite3.OperationalError:
+        # Fallback to /tmp if BASE_DIR is read-only
+        tmp_path = Path("/tmp") / "unstructured_logs.db"
+        conn = sqlite3.connect(tmp_path)
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_log_db():
     """Initializes unstructured document store tables for login and chat logs."""
-    conn = get_log_db_connection()
-    cursor = conn.cursor()
-    
-    # Document store table for unstructured logs
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS unstructured_logs (
-        log_id TEXT PRIMARY KEY,
-        collection_name TEXT NOT NULL,
-        event_type TEXT NOT NULL,
-        user_id TEXT,
-        email TEXT,
-        timestamp INTEGER NOT NULL,
-        document_json TEXT NOT NULL
-    );
-    """)
+    try:
+        conn = get_log_db_connection()
+        cursor = conn.cursor()
+        
+        # Document store table for unstructured logs
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS unstructured_logs (
+            log_id TEXT PRIMARY KEY,
+            collection_name TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            user_id TEXT,
+            email TEXT,
+            timestamp INTEGER NOT NULL,
+            document_json TEXT NOT NULL
+        );
+        """)
 
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_collection_type ON unstructured_logs(collection_name, event_type);
-    """)
+        cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_collection_type ON unstructured_logs(collection_name, event_type);
+        """)
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("init_log_db warning:", e)
 
-init_log_db()
+try:
+    init_log_db()
+except Exception as e:
+    print("Failed to init log db:", e)
+
 
 def log_unstructured_event(collection_name: str, event_type: str, user_id: str, email: str, data: Dict[str, Any]) -> str:
     """

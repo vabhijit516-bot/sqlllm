@@ -2,6 +2,9 @@ import json
 import uuid
 import csv
 import io
+import os
+import re
+import time
 import sqlite3
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Depends, Header, Response
@@ -19,12 +22,16 @@ from multi_db import db_manager, MultiDatabaseManager
 
 load_dotenv()
 
+from db import DB_PATH
+
 # Initialize App DB and Seed Domain DB
 init_app_db()
-try:
-    seed_database()
-except Exception as e:
-    print("Database seeding info:", e)
+if not os.getenv("VERCEL") or not DB_PATH.exists():
+    try:
+        seed_database()
+    except Exception as e:
+        print("Database seeding info:", e)
+
 
 app = FastAPI(
     title="TechX Enterprise AI - Intelligent LLM Database Agent API",
@@ -53,6 +60,15 @@ class GoogleAuthRequest(BaseModel):
 class ExportCSVRequest(BaseModel):
     data: List[Dict[str, Any]]
     filename: Optional[str] = "export_data.csv"
+
+class UploadCSVRequest(BaseModel):
+    table_name: str
+    csv_content: str
+
+class UploadTableRequest(BaseModel):
+    table_name: str
+    columns: List[str]
+    rows: List[Dict[str, Any]]
 
 @app.get("/")
 def read_root():
@@ -303,6 +319,155 @@ def export_csv(req: ExportCSVRequest):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={req.filename}"}
     )
+
+def process_and_create_table_from_csv(table_name: str, csv_content: str):
+    """
+    Utility to create a new SQLite database table dynamically from CSV text content.
+    """
+    clean_name = re.sub(r'[^a-zA-Z0-9_]', '', table_name.lower().replace(' ', '_')).strip()
+    if not clean_name:
+        clean_name = f"uploaded_table_{int(time.time())}"
+    if not clean_name.startswith("uploaded_") and not clean_name.startswith("demo_"):
+        clean_name = f"uploaded_{clean_name}"
+
+    reader = csv.reader(io.StringIO(csv_content.strip()))
+    header = next(reader, None)
+    if not header:
+        raise ValueError("CSV content is empty")
+
+    clean_columns = []
+    seen = set()
+    for col in header:
+        c_clean = re.sub(r'[^a-zA-Z0-9_]', '', col.lower().replace(' ', '_')).strip()
+        if not c_clean or c_clean in seen:
+            c_clean = f"col_{len(clean_columns)+1}"
+        seen.add(c_clean)
+        clean_columns.append(c_clean)
+
+    rows = []
+    for row in reader:
+        if not row or all(v.strip() == '' for v in row):
+            continue
+        row_dict = {}
+        for i, val in enumerate(row):
+            if i < len(clean_columns):
+                val_str = val.strip()
+                if val_str.isdigit():
+                    row_dict[clean_columns[i]] = int(val_str)
+                else:
+                    try:
+                        row_dict[clean_columns[i]] = float(val_str)
+                    except ValueError:
+                        row_dict[clean_columns[i]] = val_str
+        rows.append(row_dict)
+
+    if not rows:
+        raise ValueError("No data rows found in CSV")
+
+    col_types = {}
+    for col in clean_columns:
+        types = set()
+        for r in rows:
+            v = r.get(col)
+            if isinstance(v, int):
+                types.add("INTEGER")
+            elif isinstance(v, float):
+                types.add("REAL")
+            elif v is not None and str(v) != "":
+                types.add("TEXT")
+        if "TEXT" in types or not types:
+            col_types[col] = "TEXT"
+        elif "REAL" in types:
+            col_types[col] = "REAL"
+        else:
+            col_types[col] = "INTEGER"
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(f"DROP TABLE IF EXISTS '{clean_name}';")
+
+    col_defs = [f"'{col}' {col_types[col]}" for col in clean_columns]
+    create_sql = f"CREATE TABLE '{clean_name}' (id INTEGER PRIMARY KEY AUTOINCREMENT, {', '.join(col_defs)});"
+    cursor.execute(create_sql)
+
+    quoted_cols = ", ".join([f"'{c}'" for c in clean_columns])
+    placeholders = ", ".join(["?"] * len(clean_columns))
+    insert_sql = f"INSERT INTO '{clean_name}' ({quoted_cols}) VALUES ({placeholders});"
+
+    for r in rows:
+        vals = [r.get(col, None) for col in clean_columns]
+        cursor.execute(insert_sql, vals)
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "success",
+        "table_name": clean_name,
+        "columns": [{"name": col, "type": col_types[col]} for col in clean_columns],
+        "row_count": len(rows),
+        "rows": rows[:10]
+    }
+
+@app.post("/api/upload-table")
+def upload_table_endpoint(req: UploadCSVRequest):
+    """
+    Upload CSV dataset or custom table data into SQLite database for review and AI querying.
+    """
+    try:
+        res = process_and_create_table_from_csv(req.table_name, req.csv_content)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/demo-tables/load")
+def load_demo_tables_endpoint():
+    """
+    Seeds and loads example demo tables (AI Benchmarks, SaaS Metrics, Tech Payroll) for instant demo & review.
+    """
+    try:
+        csv_ai = """model_name,provider,parameters_b,mmlu_score,cost_per_1m_tokens_usd,context_window_k
+Gemini 2.5 Flash,Google,8.5,86.4,0.075,1000
+GPT-4o,OpenAI,200.0,88.7,2.50,128
+Claude 3.5 Sonnet,Anthropic,175.0,88.3,3.00,200
+DeepSeek R1,DeepSeek,671.0,90.8,0.55,128
+Llama 3.1 405B,Meta,405.0,88.6,1.20,128
+Mistral Large 2,Mistral,123.0,84.0,2.00,128
+Qwen 2.5 72B,Alibaba,72.0,85.3,0.40,128
+Grok 2,xAI,150.0,87.5,2.00,128"""
+
+        csv_saas = """company_name,category,arr_millions,nrr_percentage,churn_rate_pct,cac_payback_months,employees
+Vercel,Developer Tools,120.5,132.0,1.8,11,450
+Snowflake,Data Cloud,2800.0,127.0,2.1,16,7000
+Stripe,Fintech,3500.0,140.0,1.2,8,8000
+Databricks,AI & Data,2400.0,135.0,1.5,14,6500
+Figma,Design & UI,750.0,130.0,1.4,10,1300
+Notion,Productivity,450.0,128.0,2.0,9,950
+Canva,Graphic Design,1800.0,125.0,2.5,7,4000
+Postman,API Platform,210.0,122.0,2.2,12,600"""
+
+        csv_payroll = """employee_id,full_name,department,job_title,salary_usd,experience_years,performance_rating
+1001,Elena Rostova,AI Engineering,Principal LLM Architect,240000,9,4.9
+1002,Marcus Vance,Data Science,Senior Data Engineer,185000,6,4.7
+1003,Aisha Chen,Product Management,VP of Product,260000,12,4.8
+1004,Devon Miller,Infrastructure,DevOps Lead,175000,7,4.6
+1005,Sophia Patel,Cybersecurity,Security Specialist,160000,5,4.5
+1006,Liam O'Connor,Frontend,Staff UI/UX Engineer,190000,8,4.8
+1007,Yuki Tanaka,AI Research,Research Scientist,225000,7,4.9
+1008,Zara Ahmed,Sales Engineering,Solutions Architect,170000,6,4.4"""
+
+        res_ai = process_and_create_table_from_csv("demo_ai_benchmarks", csv_ai)
+        res_saas = process_and_create_table_from_csv("demo_saas_metrics", csv_saas)
+        res_payroll = process_and_create_table_from_csv("demo_tech_payroll", csv_payroll)
+
+        return {
+            "status": "success",
+            "message": "Demo tables loaded successfully into SQL database.",
+            "demo_tables": [res_ai, res_saas, res_payroll]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/seed")
 def trigger_seed():

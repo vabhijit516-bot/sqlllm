@@ -6,6 +6,7 @@ import DashboardView from './components/DashboardView';
 import GoogleAuth from './components/GoogleAuth';
 import VoiceInput from './components/VoiceInput';
 import TablePreviewModal from './components/TablePreviewModal';
+import TableUploadModal from './components/TableUploadModal';
 import { animateClick, animateTabSwitch, animateFloat, useAnimeStagger, useAnimeTilt } from './utils/useAnime';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
   const [pinnedCharts, setPinnedCharts] = useState([]);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
@@ -429,8 +431,18 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Header Google Sign-In */}
+          {/* Right Header Google Sign-In & Upload Studio */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={(e) => {
+                animateClick(e.currentTarget);
+                setUploadModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-cyan-600/30 to-indigo-600/30 hover:from-cyan-600/50 hover:to-indigo-600/50 border border-cyan-500/40 text-cyan-200 text-xs font-mono font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px] text-cyan-400">upload_file</span>
+              <span>Upload / Demo Table</span>
+            </button>
             <GoogleAuth user={user} onAuthSuccess={(u) => setUser(u)} onLogout={() => setUser(null)} />
           </div>
         </header>
@@ -444,6 +456,7 @@ export default function App() {
                   changeTab('chat');
                   handleSendMessage(promptText);
                 }}
+                onOpenUploadModal={() => setUploadModalOpen(true)}
               />
             </div>
           )}
@@ -677,6 +690,20 @@ export default function App() {
           }}
         />
       )}
+
+      {/* Table & Database Upload / Demo Modal */}
+      <TableUploadModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onTableCreated={(createdTableName) => {
+          setSelectedTable(createdTableName);
+        }}
+        onSelectPrompt={(promptQuery) => {
+          setInputQuery(promptQuery);
+          changeTab('chat');
+          handleSendMessage(promptQuery);
+        }}
+      />
     </div>
   );
 }

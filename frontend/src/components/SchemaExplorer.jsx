@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Database, Table, Key, ChevronRight, ChevronDown, Play, RefreshCw, Zap, Link2 } from 'lucide-react';
+import { Database, Table, Key, ChevronRight, ChevronDown, Play, RefreshCw, Zap, Link2, Upload, Sparkles, Plus } from 'lucide-react';
 import { animateClick, useAnimeStagger } from '../utils/useAnime';
 
-export default function SchemaExplorer({ onSelectPrompt, onClose }) {
+export default function SchemaExplorer({ onSelectPrompt, onClose, onOpenUploadModal }) {
   const [schema, setSchema] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedTables, setExpandedTables] = useState({});
@@ -39,10 +39,9 @@ export default function SchemaExplorer({ onSelectPrompt, onClose }) {
 
   const samplePrompts = [
     { title: "Top 5 Products", query: "Show me the top 5 products by revenue" },
+    { title: "AI Model Benchmarks", query: "Show me top models in demo_ai_benchmarks sorted by MMLU score" },
     { title: "ER Diagram", query: "Draw me the ER diagram for this database" },
-    { title: "Order Process", query: "Create a flowchart showing how orders flow through our system" },
-    { title: "Revenue Trend", query: "Show me the monthly revenue trend for orders" },
-    { title: "Customer Summary", query: "Which countries have the most customers?" }
+    { title: "Revenue Trend", query: "Show me the monthly revenue trend for orders" }
   ];
 
   return (
@@ -55,7 +54,7 @@ export default function SchemaExplorer({ onSelectPrompt, onClose }) {
           </div>
           <div>
             <h3 className="font-display font-extrabold text-base text-slate-100">Schema Explorer</h3>
-            <span className="text-[10px] text-slate-400 font-mono">SQLite + Postgres Catalog</span>
+            <span className="text-[10px] text-slate-400 font-mono">SQLite + Custom Tables</span>
           </div>
         </div>
         <button
@@ -70,9 +69,35 @@ export default function SchemaExplorer({ onSelectPrompt, onClose }) {
         </button>
       </div>
 
+      {/* Upload & Demo Tables Shortcut Banner */}
+      <div className="mb-4">
+        <button
+          onClick={(e) => {
+            animateClick(e.currentTarget);
+            if (onOpenUploadModal) onOpenUploadModal();
+          }}
+          className="w-full p-3 rounded-xl bg-gradient-to-r from-cyan-600/20 via-indigo-600/20 to-purple-600/20 hover:from-cyan-600/30 hover:to-purple-600/30 border border-cyan-500/40 hover:border-cyan-400 transition-all flex items-center justify-between group shadow-lg"
+        >
+          <div className="flex items-center space-x-2.5">
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-300">
+              <Upload className="w-3.5 h-3.5" />
+            </div>
+            <div className="text-left">
+              <span className="font-extrabold text-xs text-slate-100 group-hover:text-cyan-200 transition-colors block">
+                Upload Table / Demo Data
+              </span>
+              <span className="text-[10px] text-cyan-400 font-mono block">
+                Add CSV or load sample datasets
+              </span>
+            </div>
+          </div>
+          <Sparkles className="w-4 h-4 text-amber-400 animate-pulse flex-shrink-0" />
+        </button>
+      </div>
+
       {/* Quick Prompts Section */}
-      <div className="mb-5">
-        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center">
+      <div className="mb-4">
+        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center">
           <Zap className="w-3.5 h-3.5 text-amber-400 mr-1.5" />
           Quick Query Templates
         </span>
@@ -84,7 +109,7 @@ export default function SchemaExplorer({ onSelectPrompt, onClose }) {
                 animateClick(e.currentTarget);
                 onSelectPrompt(p.query);
               }}
-              className="w-full text-left px-3.5 py-2.5 text-xs rounded-xl bg-slate-900/60 hover:bg-indigo-600/25 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-indigo-200 transition-all flex items-center justify-between group shadow-sm active:scale-98"
+              className="w-full text-left px-3 py-2 text-xs rounded-xl bg-slate-900/60 hover:bg-indigo-600/25 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-indigo-200 transition-all flex items-center justify-between group shadow-sm active:scale-98"
             >
               <span className="truncate font-medium">{p.title}</span>
               <Play className="w-3.5 h-3.5 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2" />
