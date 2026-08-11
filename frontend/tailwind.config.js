@@ -1,0 +1,78 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        "on-primary-fixed": "#002022",
+        "on-secondary-container": "#b3b1ff",
+        "primary-container": "#00f2fe",
+        "on-surface": "#dce1fb",
+        "tertiary-container": "#67f4b7",
+        "on-primary-container": "#006a70",
+        "surface-container-highest": "#2e3447",
+        "outline": "#849495",
+        "on-primary": "#00373a",
+        "tertiary": "#e1ffec",
+        "surface-container-lowest": "#070d1f",
+        "inverse-on-surface": "#2a3043",
+        "tertiary-fixed": "#6ffbbe",
+        "tertiary-fixed-dim": "#4edea3",
+        "on-tertiary-container": "#006e4b",
+        "on-secondary": "#1d00a5",
+        "on-tertiary-fixed-variant": "#005236",
+        "inverse-primary": "#00696f",
+        "primary-fixed-dim": "#00dce6",
+        "on-primary-fixed-variant": "#004f53",
+        "on-secondary-fixed-variant": "#3323cc",
+        "secondary": "#c3c0ff",
+        "surface-variant": "#2e3447",
+        "surface-tint": "#00dce6",
+        "surface-container-high": "#23293c",
+        "surface-bright": "#33394c",
+        "surface": "#0c1324",
+        "secondary-container": "#3626ce",
+        "primary-fixed": "#6ff6ff",
+        "on-background": "#dce1fb",
+        "surface-dim": "#0c1324",
+        "on-error-container": "#ffdad6",
+        "on-tertiary-fixed": "#002113",
+        "primary": "#e0fdff",
+        "inverse-surface": "#dce1fb",
+        "secondary-fixed": "#e2dfff",
+        "on-surface-variant": "#b9cacb",
+        "error-container": "#93000a",
+        "on-tertiary": "#003824",
+        "on-error": "#690005",
+        "surface-container-low": "#151b2d",
+        "on-secondary-fixed": "#0f0069",
+        "surface-container": "#191f31",
+        "secondary-fixed-dim": "#c3c0ff",
+        "background": "#0c1324",
+        "outline-variant": "#3a494b",
+        "error": "#ffb4ab"
+      },
+      fontFamily: {
+        sans: ['Inter', 'Outfit', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+        display: ['Inter', 'Outfit', 'sans-serif']
+      },
+      spacing: {
+        "gutter": "24px",
+        "sm": "16px",
+        "lg": "40px",
+        "base": "4px",
+        "xs": "8px",
+        "container-max": "1440px",
+        "md": "24px",
+        "xl": "64px"
+      }
+    },
+  },
+  plugins: [],
+}
+

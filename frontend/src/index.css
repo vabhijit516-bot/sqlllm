@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background: #0c1324 url('/waterfall_bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #dce1fb;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', sans-serif;
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Material Symbols Outlined Font Definition */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* Glass panel and card styling from Command Center design */
+.glass-panel {
+  background: rgba(12, 19, 36, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(185, 202, 203, 0.18);
+}
+
+.glass-card {
+  background: rgba(12, 19, 36, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(58, 73, 75, 0.3);
+  border-top: 1px solid rgba(132, 148, 149, 0.2);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(21, 27, 45, 0.45);
+  border-color: rgba(0, 242, 254, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 242, 254, 0.12);
+  transform: translateY(-2px);
+}
+
+.primary-glow {
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.25);
+}
+
+.primary-gradient-btn {
+  background: linear-gradient(135deg, #00f2fe 0%, #cd1919 100%);
+  transition: all 0.3s ease;
+}
+
+.primary-gradient-btn:hover {
+  box-shadow: 0 0 22px rgba(0, 242, 254, 0.45);
+}
+
+.chat-input-glow:focus-within {
+  border-color: #00f2fe;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.15) inset, 0 0 20px rgba(0, 242, 254, 0.15);
+}
+
+.bg-pattern {
+  background-image: radial-gradient(rgba(132, 148, 149, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(58, 73, 75, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(132, 148, 149, 0.8);
+}
+
+/* Keyframe animations for entrance */
+@keyframes scrollUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-scroll-in {
+  animation: scrollUpFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

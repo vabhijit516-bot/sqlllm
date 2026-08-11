@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - SECRET_KEY=datapulse-secret-key-3d-agent-2026
+      - DATABASE_PATH=ecommerce.db
+      - APP_DB_PATH=app_state.db
+    volumes:
+      - ./ecommerce.db:/app/ecommerce.db
+      - ./app_state.db:/app/app_state.db

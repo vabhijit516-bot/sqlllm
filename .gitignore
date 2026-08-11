@@ -1,0 +1,34 @@
+# Environment variables (API Keys & Secrets) - NEVER COMMIT TO GIT
+.env
+.env.local
+.env.*.local
+*.env
+backend/.env
+frontend/.env
+
+# Local Databases
+*.db
+*.sqlite
+*.sqlite3
+app_state.db
+ecommerce.db
+unstructured_logs.db
+
+# Dependencies & Virtual Envs
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.venv/
+env/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# OS metadata
+.DS_Store
+Thumbs.db
