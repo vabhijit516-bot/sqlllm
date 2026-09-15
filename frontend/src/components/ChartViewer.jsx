@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import anime from 'animejs';
 import {
   ResponsiveContainer,
@@ -19,30 +19,50 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
-import { Download, BarChart2, TrendingUp, PieChart as PieIcon, Activity, Bookmark } from 'lucide-react';
+import {
+  Download,
+  BarChart2,
+  TrendingUp,
+  PieChart as PieIcon,
+  Activity,
+  Bookmark,
+  Layers,
+  Table as TableIcon,
+  Maximize2,
+  X
+} from 'lucide-react';
 import { animateClick } from '../utils/useAnime';
 
 const COLOR_PALETTE = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export default function ChartViewer({ chartData, onPin }) {
   const chartCardRef = useRef(null);
+  const [currentChartType, setCurrentChartType] = useState('bar');
+  const [showDataTable, setShowDataTable] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    if (chartData && chartData.chart_type) {
+      setCurrentChartType(chartData.chart_type.toLowerCase());
+    }
+  }, [chartData]);
 
   useEffect(() => {
     if (chartCardRef.current) {
       anime({
         targets: chartCardRef.current,
-        scale: [0.94, 1],
+        scale: [0.95, 1],
         opacity: [0, 1],
         translateY: [15, 0],
         duration: 650,
         easing: 'cubicBezier(0.16, 1, 0.3, 1)'
       });
     }
-  }, [chartData]);
+  }, [chartData, currentChartType]);
 
   if (!chartData || !chartData.data || chartData.data.length === 0) return null;
 
-  const { chart_type, title, description, x_axis_key, y_axis_keys, data } = chartData;
+  const { title, description, x_axis_key, y_axis_keys, data } = chartData;
   const primaryYKey = y_axis_keys && y_axis_keys.length > 0 ? y_axis_keys[0] : 'value';
 
   const downloadSVG = () => {
@@ -59,8 +79,8 @@ export default function ChartViewer({ chartData, onPin }) {
     document.body.removeChild(link);
   };
 
-  const renderChart = () => {
-    switch (chart_type) {
+  const renderChartContent = () => {
+    switch (currentChartType) {
       case 'line':
         return (
           <LineChart data={data}>
@@ -131,7 +151,7 @@ export default function ChartViewer({ chartData, onPin }) {
                 dataKey={key}
                 stroke={COLOR_PALETTE[idx % COLOR_PALETTE.length]}
                 fill={COLOR_PALETTE[idx % COLOR_PALETTE.length]}
-                fillOpacity={0.3}
+                fillOpacity={0.35}
               />
             ))}
           </AreaChart>
@@ -160,17 +180,22 @@ export default function ChartViewer({ chartData, onPin }) {
   };
 
   const getChartIcon = () => {
-    switch (chart_type) {
+    switch (currentChartType) {
       case 'line': return <TrendingUp className="w-5 h-5 text-emerald-400" />;
       case 'pie': return <PieIcon className="w-5 h-5 text-amber-400" />;
       case 'scatter': return <Activity className="w-5 h-5 text-cyan-400" />;
+      case 'area': return <Layers className="w-5 h-5 text-purple-400" />;
       default: return <BarChart2 className="w-5 h-5 text-indigo-400" />;
     }
   };
 
   return (
-    <div ref={chartCardRef} className={`mt-4 p-5 rounded-2xl glass-panel border border-indigo-500/20 shadow-2xl chart-container-${title.replace(/\s+/g, '')}`}>
-      <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3">
+    <div
+      ref={chartCardRef}
+      className={`mt-4 p-5 rounded-2xl glass-panel border border-indigo-500/20 shadow-2xl chart-container-${title.replace(/\s+/g, '')}`}
+    >
+      {/* Top Header Controls */}
+      <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 flex-wrap gap-2">
         <div className="flex items-center space-x-2">
           {getChartIcon()}
           <div>
@@ -179,32 +204,134 @@ export default function ChartViewer({ chartData, onPin }) {
           </div>
         </div>
 
+        {/* Controls: Chart Type Switcher & Action Buttons */}
         <div className="flex items-center space-x-2">
+          {/* Manual Chart Type Switcher */}
+          <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 space-x-1">
+            {['bar', 'line', 'pie', 'scatter', 'area'].map((type) => (
+              <button
+                key={type}
+                onClick={(e) => {
+                  animateClick(e.currentTarget);
+                  setCurrentChartType(type);
+                  setShowDataTable(false);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono capitalize transition-all ${
+                  currentChartType === type && !showDataTable
+                    ? 'bg-indigo-600 text-white font-semibold shadow-md'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+
+            {/* Data Table Fallback Toggle */}
+            <button
+              onClick={(e) => {
+                animateClick(e.currentTarget);
+                setShowDataTable(!showDataTable);
+              }}
+              className={`px-2 py-1 rounded-lg text-[10px] font-mono transition-all flex items-center space-x-1 ${
+                showDataTable
+                  ? 'bg-cyan-600 text-white font-semibold'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+              title="Accessible Table Fallback"
+            >
+              <TableIcon className="w-3 h-3" />
+              <span>Table</span>
+            </button>
+          </div>
+
           {onPin && (
             <button
-              onClick={() => onPin(chartData)}
+              onClick={(e) => {
+                animateClick(e.currentTarget);
+                onPin({ ...chartData, chart_type: currentChartType });
+              }}
               className="flex items-center space-x-1 text-xs px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 transition-all"
             >
               <Bookmark className="w-3.5 h-3.5" />
-              <span>Pin to Dashboard</span>
+              <span className="hidden sm:inline">Pin to Dashboard</span>
             </button>
           )}
+
+          <button
+            onClick={() => setIsFullScreen(true)}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-all"
+            title="Full Screen View"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+
           <button
             onClick={downloadSVG}
             className="flex items-center space-x-1 text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-all"
             title="Download SVG Chart"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>SVG</span>
+            <span className="hidden sm:inline">SVG</span>
           </button>
         </div>
       </div>
 
-      <div className="w-full h-72 pt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          {renderChart()}
-        </ResponsiveContainer>
-      </div>
+      {/* Main Chart or Accessible Table View */}
+      {showDataTable ? (
+        <div className="w-full max-h-72 overflow-auto rounded-xl border border-slate-800 bg-slate-950/80 p-2 font-mono text-xs">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-900 border-b border-slate-800 text-cyan-300">
+                <th className="p-2 font-semibold">{x_axis_key}</th>
+                {y_axis_keys.map((k) => (
+                  <th key={k} className="p-2 font-semibold">{k}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+              {data.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-slate-900/60">
+                  <td className="p-2">{String(row[x_axis_key] || '')}</td>
+                  {y_axis_keys.map((k) => (
+                    <td key={k} className="p-2">{String(row[k] || '')}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="w-full h-72 pt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            {renderChartContent()}
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Full Screen View Modal */}
+      {isFullScreen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6 animate-scroll-in">
+          <div className="w-full max-w-5xl h-[80vh] glass-panel border border-indigo-500/30 rounded-3xl p-6 flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                {getChartIcon()}
+                <h3 className="font-display font-bold text-xl text-slate-100">{title}</h3>
+              </div>
+              <button
+                onClick={() => setIsFullScreen(false)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 w-full pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                {renderChartContent()}
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

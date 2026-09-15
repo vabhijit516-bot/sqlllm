@@ -594,6 +594,7 @@ export default function App() {
                         message={msg}
                         onPinChart={handlePinChart}
                         onSelectTable={(tbl) => setSelectedTable(tbl)}
+                        onRerunSQL={(sql) => handleSendMessage(`Execute this SQL query and visualize results: ${sql}`)}
                       />
                     ))}
                   </div>
