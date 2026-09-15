@@ -87,7 +87,11 @@ export default function ChartViewer({ chartData, onPin }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey={x_axis_key} stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
             <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#6366f1', borderRadius: '12px', color: '#ffffff', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
+              itemStyle={{ color: '#ffffff', fontSize: '12px', fontWeight: '500' }}
+              labelStyle={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '13px' }}
+            />
             <Legend />
             {y_axis_keys.map((key, idx) => (
               <Line
@@ -106,7 +110,11 @@ export default function ChartViewer({ chartData, onPin }) {
       case 'pie':
         return (
           <PieChart>
-            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#6366f1', borderRadius: '12px', color: '#ffffff', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
+              itemStyle={{ color: '#ffffff', fontSize: '12px', fontWeight: '500' }}
+              labelStyle={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '13px' }}
+            />
             <Legend />
             <Pie
               data={data}
@@ -132,7 +140,12 @@ export default function ChartViewer({ chartData, onPin }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey={x_axis_key} stroke="#94a3b8" name={x_axis_key} />
             <YAxis dataKey={primaryYKey} stroke="#94a3b8" name={primaryYKey} />
-            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+            <Tooltip
+              cursor={{ strokeDasharray: '3 3' }}
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#6366f1', borderRadius: '12px', color: '#ffffff', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
+              itemStyle={{ color: '#ffffff', fontSize: '12px', fontWeight: '500' }}
+              labelStyle={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '13px' }}
+            />
             <Scatter name={title} data={data} fill="#818cf8" />
           </ScatterChart>
         );
@@ -143,7 +156,11 @@ export default function ChartViewer({ chartData, onPin }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey={x_axis_key} stroke="#94a3b8" />
             <YAxis stroke="#94a3b8" />
-            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#6366f1', borderRadius: '12px', color: '#ffffff', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
+              itemStyle={{ color: '#ffffff', fontSize: '12px', fontWeight: '500' }}
+              labelStyle={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '13px' }}
+            />
             {y_axis_keys.map((key, idx) => (
               <Area
                 key={key}
@@ -164,7 +181,11 @@ export default function ChartViewer({ chartData, onPin }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey={x_axis_key} stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
             <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
-            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#6366f1', borderRadius: '12px', color: '#ffffff', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
+              itemStyle={{ color: '#ffffff', fontSize: '12px', fontWeight: '500' }}
+              labelStyle={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '13px' }}
+            />
             <Legend />
             {y_axis_keys.map((key, idx) => (
               <Bar
