@@ -102,14 +102,16 @@ def explain_results(user_prompt: str, data: str) -> str:
         
     prompt = f"User asked: {user_prompt}\nQuery Results: {data}\nProvide a concise and natural answer based on the data."
     
-    from google import genai
-    from google.genai import types
-    client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model='gemini-3.7-flash',
-        contents=prompt
-    )
-    return response.text
+    try:
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-3.7-flash',
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return f"Query returned results, but could not generate natural language summary. Error: {str(e)}"
 
 def run_agent(user_prompt: str, history: List[Dict[str, str]] = None) -> Dict[str, Any]:
     """
