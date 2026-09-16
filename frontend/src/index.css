@@ -9,8 +9,7 @@
   }
 
   body {
-    background: #0c1324 url('/waterfall_bg.jpg') no-repeat center center fixed;
-    background-size: cover;
+    background: #0c1324;
     color: #dce1fb;
     overflow-x: hidden;
   }
