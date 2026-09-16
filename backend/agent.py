@@ -11,7 +11,14 @@ from tools.chart_tool import generate_chart, CHART_TOOL_DECLARATION
 from tools.diagram_tool import generate_flowchart, DIAGRAM_TOOL_DECLARATION
 from tools.explain_tool import explain_data, EXPLAIN_TOOL_DECLARATION
 
-load_dotenv()
+env_path_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+env_path_backend = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+
+if os.path.exists(env_path_backend):
+    load_dotenv(dotenv_path=env_path_backend)
+if os.path.exists(env_path_root):
+    load_dotenv(dotenv_path=env_path_root)
+load_dotenv() # Fallback to default behavior
 
 # Map tool names to python functions
 TOOL_MAP = {

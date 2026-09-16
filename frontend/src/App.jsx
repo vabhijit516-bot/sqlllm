@@ -238,11 +238,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-transparent text-on-background font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container relative overflow-hidden">
-      {/* Waterfall Custom Image Background */}
-      <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-85 pointer-events-none transition-all duration-700 filter brightness-105 contrast-105"
-        style={{ backgroundImage: `url('/waterfall_bg.jpg')` }}
-      />
+      {/* Background */}
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-[#0c1324]/60 via-[#0c1324]/40 to-[#0c1324]/75 pointer-events-none" />
 
       {/* 3D Three.js Interactive Backdrop */}
