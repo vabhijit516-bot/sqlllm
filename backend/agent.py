@@ -74,58 +74,42 @@ Ensure the SQL query uses correct table and column names from the provided schem
 """
 
 def call_llm(prompt: str) -> str:
-    """Try to call Ollama, fallback to Gemini."""
+    """Call Gemini API directly."""
     api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or len(api_key.strip()) < 10:
+        raise Exception("No Gemini API key found. Please set GEMINI_API_KEY in your environment variables.")
     
-    # Try Ollama first as per user request
-    try:
-        import ollama
-        resp = ollama.chat(model='llama3.1', messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt}
-        ], format='json')
-        return resp['message']['content']
-    except Exception as e:
-        print(f"Ollama failed or not available ({e}), falling back to Gemini")
-        if not api_key:
-            raise Exception("No Gemini API key and Ollama failed.")
-        
-        from google import genai
-        from google.genai import types
-        client = genai.Client(api_key=api_key)
-        config = types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            temperature=0.1,
-            response_mime_type="application/json"
-        )
-        response = client.models.generate_content(
-            model='gemini-3.6-flash',
-            contents=prompt,
-            config=config
-        )
-        return response.text
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=api_key)
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        temperature=0.1,
+        response_mime_type="application/json"
+    )
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=prompt,
+        config=config
+    )
+    return response.text
 
 def explain_results(user_prompt: str, data: str) -> str:
     """Generate final natural language response based on SQL results."""
     api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or len(api_key.strip()) < 10:
+        return "Note: Gemini API key is missing. Could not generate natural language summary."
+        
     prompt = f"User asked: {user_prompt}\nQuery Results: {data}\nProvide a concise and natural answer based on the data."
     
-    try:
-        import ollama
-        resp = ollama.chat(model='llama3.1', messages=[
-            {"role": "system", "content": "You are a helpful data assistant. Provide a natural language summary of the data results to answer the user's question."},
-            {"role": "user", "content": prompt}
-        ])
-        return resp['message']['content']
-    except Exception:
-        from google import genai
-        from google.genai import types
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model='gemini-3.6-flash',
-            contents=prompt
-        )
-        return response.text
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=prompt
+    )
+    return response.text
 
 def run_agent(user_prompt: str, history: List[Dict[str, str]] = None) -> Dict[str, Any]:
     """
