@@ -15,10 +15,10 @@ env_path_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 env_path_backend = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 
 if os.path.exists(env_path_backend):
-    load_dotenv(dotenv_path=env_path_backend)
+    load_dotenv(dotenv_path=env_path_backend, override=True)
 if os.path.exists(env_path_root):
-    load_dotenv(dotenv_path=env_path_root)
-load_dotenv() # Fallback to default behavior
+    load_dotenv(dotenv_path=env_path_root, override=True)
+load_dotenv(override=True) # Fallback to default behavior
 
 # Map tool names to python functions
 TOOL_MAP = {

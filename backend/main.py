@@ -20,7 +20,7 @@ from auth import verify_google_token_and_upsert_user, decode_jwt_token
 from unstructured_logger import log_unstructured_event, query_unstructured_logs
 from multi_db import db_manager, MultiDatabaseManager
 
-load_dotenv()
+load_dotenv(override=True)
 
 from db import DB_PATH
 
