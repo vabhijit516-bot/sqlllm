@@ -88,7 +88,7 @@ def call_llm(prompt: str) -> str:
         response_mime_type="application/json"
     )
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-3.6-flash',
         contents=prompt,
         config=config
     )
@@ -106,7 +106,7 @@ def explain_results(user_prompt: str, data: str) -> str:
     from google.genai import types
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
-        model='gemini-1.5-flash',
+        model='gemini-3.6-flash',
         contents=prompt
     )
     return response.text
